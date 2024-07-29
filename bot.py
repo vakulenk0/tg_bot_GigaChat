@@ -1,13 +1,17 @@
 import telebot
-from token import TOKEN
+from DATA import TOKEN
+from DATA import AUTH_DATA
+from gigachat import GigaChat
 
 BOT = telebot.TeleBot(TOKEN)
 
 @BOT.message_handler(commands=['start'])
 def debug(msg):
-    BOT.send_message(msg.chat.id, f"{msg.from_user.first_name}, Добро пожаловать в GigaChat бота!\n"
-                                       "Здесь вы можете задать любой вопрос и бот на него ответит\n"
-                                       "Пока что бот способен отвечать только на текстовые запросы! Приятного использования)\n")
+    BOT.send_message(msg.chat.id, f'''Привет, {msg.from_user.first_name}, меня зовут Дима Вакуленко, это мой бот помощник
+Если вам потребуется быстро найти какую-нибудь информацию в интернете, просто спросите бота и он быстро и доступно её сформулирует для вас
+Вся необходимая информация есть по команде /help
+Приятного пользования!
+Мой github - https://github.com/vakulenk0''')
 
 
 @BOT.message_handler(content_types=['photo', 'video', 'audio', 'document', 'sticker',
@@ -17,26 +21,19 @@ def missing_type(msg):
     BOT.send_message(msg.chat.id, "Пока что я могу обрабатывать только текст :'( ")
 
 
-@BOT.message_handler(commands=['own'])
-def start(msg):
-    BOT.send_message(msg.chat.id,
-                f"Привет, я Дима Вакуленко и это мой пробный телеграмм ROG_bot, "
-                     "который использует API GigaChat'a для обработки запросов\n"
-                     "Если заинтеросовал мой проект, можете заглянуть его реализацию на github"
-                     " - https://github.com/vakulenk0")
-
-@BOT.message_handler(commands=['debug'])
-def debug(msg):
-    BOT.send_message(msg.chat.id, msg)
-
-
 @BOT.message_handler(commands=['help'])
 def help(msg):
-    BOT.send_message(msg.chat.id, "Помогай себе сам!!!")
+    BOT.send_message(msg.chat.id, '''Основные команды бота:
+/start - основная информация
+/help - помощь по командам''')
 
 
 @BOT.message_handler()
 def request(msg):
-    BOT.send_message(msg.chat.id, "Помогай себе сам!!!")
+    BOT.send_message(msg.chat.id, "GigaChat генерирует ответ...")
+    with GigaChat(credentials=AUTH_DATA, verify_ssl_certs=False) as giga:
+        response = giga.chat(f"{msg.text}")
+        # print(response.choices[0].message.content)
+    BOT.send_message(msg.chat.id, response.choices[0].message.content)
 
 BOT.polling()
